@@ -11,25 +11,7 @@ import cv2
 import matplotlib.pyplot as plt
 import random
 from glob import glob
-
-"""
-Data functions
-    Create train, val, test lists
-        read all imgs
-        sort numerically
-        partition 80/15/5
-        return three dif lists
-    Preprocessing
-        read file at random from list
-        resize
-        get random patch coordinates
-        get random perturbed patch coordinates
-        concatenate points into H_4pts
-        compute 
-        warp image
-        get patch from orignal image and warp image, concatenate depthwise
-        return X=img_patches, Y=H_4pts
-"""
+import data
 
 
 def get_test(path):
@@ -88,15 +70,18 @@ def get_test(path):
     return color_image, H_inverse, val_image, four_points_array
 
 
-color_image, H_matrix,val_image,four_points_array = get_test("./datasets/unlabeled2017/*.jpg")
-four_points_array_ = four_points_array.reshape((1,4,2))
-rectangle_image = cv2.polylines(color_image, four_points_array_, 1, (0,0,255),2)
-warped_image = cv2.warpPerspective(rectangle_image, H_matrix, (color_image.shape[1], color_image.shape[0]))
+data.build_lists()
 
-plt.imshow(rectangle_image)
-plt.title('original image')
-plt.show()
 
-plt.imshow(warped_image)
-plt.title('warped_image image')
-plt.show()
+# color_image, H_matrix,val_image,four_points_array = get_test("./datasets/unlabeled2017/*.jpg")
+# four_points_array_ = four_points_array.reshape((1,4,2))
+# rectangle_image = cv2.polylines(color_image, four_points_array_, 1, (0,0,255),2)
+# warped_image = cv2.warpPerspective(rectangle_image, H_matrix, (color_image.shape[1], color_image.shape[0]))
+#
+# plt.imshow(rectangle_image)
+# plt.title('original image')
+# plt.show()
+#
+# plt.imshow(warped_image)
+# plt.title('warped_image image')
+# plt.show()
