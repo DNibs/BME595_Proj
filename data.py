@@ -11,10 +11,67 @@ import cv2
 import matplotlib.pyplot as plt
 import random
 from glob import glob
+import torch
+import torchvision
 
 
 # Filepaths
 dir_data = '../MSCOCO/unlabeled2017/'
+
+
+class CustomDataset(torch.utils.data.dataset.Dataset):
+
+    def __init__(self, dir_data, idx_begin, idx_end, rho, patch_sz, height, width):
+        data_lst = glob(dir_data+'*.jpg')
+        data_lst.sort()
+        self.data_lst = data_lst[idx_begin:idx_end]
+        self.rho = rho
+        self.patch_sz = patch_sz
+        self.height = height
+        self.width = width
+
+    def __getitem__(self, index):
+        # Get random image
+        idx = random.randint(0, len(self.data_lst) - 1)
+        img_file_location = self.data_lst[idx]
+        color_image = plt.imread(img_file_location)
+        color_image = cv2.resize(color_image, (self.width, self.height))
+        gray_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2GRAY)
+
+        # Create point for corners of image patch
+        y = random.randint(self.rho, self.height - self.rho - self.patch_sz)  # row
+        x = random.randint(self.rho, self.width - self.rho - self.patch_sz)  # col
+        # define corners of image patch
+        top_left_point = (x, y)
+        bottom_left_point = (self.patch_sz + x, y)
+        bottom_right_point = (self.patch_sz + x, self.patch_sz + y)
+        top_right_point = (x, self.patch_sz + y)
+        four_points = [top_left_point, bottom_left_point, bottom_right_point, top_right_point]
+        perturbed_four_points = []
+        for point in four_points:
+            perturbed_four_points.append(
+                (point[0] + random.randint(-self.rho, self.rho), point[1] + random.randint(-self.rho, self.rho)))
+
+        # calculate H
+        H = cv2.getPerspectiveTransform(np.float32(four_points), np.float32(perturbed_four_points))
+        H_inverse = np.linalg.inv(H)
+        inv_warped_image = cv2.warpPerspective(gray_image, H_inverse, (320, 240))
+        warped_image = cv2.warpPerspective(gray_image, H, (320, 240))
+
+        # grab image patches
+        original_patch = gray_image[y:y + self.patch_sz, x:x + self.patch_sz]
+        warped_patch = inv_warped_image[y:y + self.patch_sz, x:x + self.patch_sz]
+        # Stack patches to create input
+        training_image = np.dstack((original_patch, warped_patch))
+        H_four_points = np.subtract(np.array(perturbed_four_points), np.array(four_points))
+        X = training_image
+        Y = H_four_points.reshape(-1)
+
+        return X, Y
+
+    def __len__(self):
+        return len(self.data_lst)
+
 
 
 def build_lists(filepath = dir_data, train_fraction = 0.85, test_number = 1000):

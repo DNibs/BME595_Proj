@@ -70,8 +70,14 @@ def get_test(path):
     return color_image, H_inverse, val_image, four_points_array
 
 
-data.build_lists()
+dir_data = '../MSCOCO/unlabeled2017/'
 
+print('test')
+data_lst = glob(dir_data + '*.jpg')
+data_lst.sort()
+print(len(data_lst))
+data_lst = data_lst[0:100]
+print(len(data_lst))
 
 # color_image, H_matrix,val_image,four_points_array = get_test("./datasets/unlabeled2017/*.jpg")
 # four_points_array_ = four_points_array.reshape((1,4,2))
