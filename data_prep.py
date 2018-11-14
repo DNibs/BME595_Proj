@@ -1,7 +1,7 @@
 # BME595 Project
 # Author: David Niblick
 # Date: 05DEC18
-# data.py
+# data_prep.py
 
 
 import cupy as cp

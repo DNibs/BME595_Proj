@@ -11,7 +11,7 @@ import cv2
 import matplotlib.pyplot as plt
 import random
 from glob import glob
-import data
+import data_prep
 import torch
 import torchvision
 
@@ -33,7 +33,7 @@ def main():
 
     dir_data = '../MSCOCO/unlabeled2017/'
 
-    train_dataset, val_dataset, test_dataset = data.build_datasets(dir_data)
+    train_dataset, val_dataset, test_dataset = data_prep.build_datasets(dir_data)
 
     # print(train_dataset.__len__())
     # print(val_dataset.__len__())
