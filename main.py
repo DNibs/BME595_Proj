@@ -24,7 +24,7 @@ FLAG_USE_GPU = True
 FLAG_LOAD_CP = False
 FLAG_LOAD_BEST_MODEL = False
 FLAG_TRAIN = True
-FLAG_DEBUG = True
+FLAG_DEBUG = False
 
 # Set Hyper Parameters
 batch_sz = 32
@@ -54,7 +54,7 @@ def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10)
                 100.0 * batch_idx / len(loader_train), loss.item() / len(data)
             ), end='')
 
-    return loss_epoch / len(loader_train.dataset)
+    return loss_epoch / len(loader_train)
 
 
 def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
@@ -73,7 +73,7 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
                     100.0 * batch_idx / len(loader_val), loss.item() / len(data)
                 ), end='')
 
-    return loss_epoch / len(loader_val.dataset)
+    return loss_epoch / len(loader_val)
 
 
 def main():
@@ -114,7 +114,7 @@ def main():
                                              drop_last=True)
 
     # Manually set seed for consistent initialization
-    torch.manual_seed(1)
+    # torch.manual_seed(1)
 
     # Initialize Neural Network
     print('Initializing NibsNet1...')
@@ -151,9 +151,8 @@ def main():
     while epoch < 10:
         start_time = time.time()
         epoch += 1
-        train_error_epoch = train(net, device, loader_train, optimizer, loss_fn, epoch)
+        train_loss_epoch = train(net, device, loader_train, optimizer, loss_fn, epoch)
         print('')
-        train_loss_epoch = train_error_epoch / train_dataset_len
         train_loss.append(train_loss_epoch)
         val_loss_epoch = validate(net, device, loader_val, loss_fn, epoch)
         val_loss.append(val_loss_epoch)
@@ -171,7 +170,7 @@ def main():
             'val_loss': val_loss,
             'epoch_time': epoch_time,
             'best_model_loss': best_model_loss
-        }, dir_model+'cp{}.tar'.format(epoch))
+        }, dir_model+'cp.tar'.format(epoch))
 
         if val_loss_epoch < best_model_loss:
             torch.save({
