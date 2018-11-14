@@ -39,14 +39,6 @@ dir_data = '../MSCOCO/unlabeled2017/'
 def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10):
     net.train().to(device=device)
     loss_epoch = 0
-    loss_arr = []
-    plt.figure(0)
-    plt.plot(loss_arr)
-    plt.xlabel('Batches')
-    plt.ylabel('Loss per batch')
-    plt.title('Training Loss For Current Epoch {}'.format(epoch))
-    plt.ion()
-    plt.show()
 
     for batch_idx, (data, target) in enumerate(loader_train):
         data, target = data.to(device), target.to(device=device)
@@ -54,42 +46,34 @@ def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10)
         out = net(data)
         loss = loss_fn(out, target)
         loss_epoch += loss.item()
-        loss_arr.append(loss.item())
         loss.backward()
         optimizer.step()
         if batch_idx % log_interval == 0:
             print('\rTrain Epoch: {} [{}/{} ({:.0f}%)]\tLoss for batch: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(loader_train.dataset),
-                100.0 * batch_idx / len(loader_train), loss.item()
+                100.0 * batch_idx / len(loader_train), loss.item() / len(data)
             ), end='')
 
-        plt.plot(loss_arr)
-        plt.draw()
-        plt.pause(0.001)
-
-
-    return loss_epoch / len(loader_train)
+    return loss_epoch / len(loader_train.dataset)
 
 
 def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
-    net.eval()
-    loss_run = 0
+    net.eval().to(device=device)
+    loss_epoch = 0
 
     with torch.no_grad():
         for batch_idx, (data, target) in enumerate(loader_val):
             data, target = data.to(device=device), target.to(device=device)
             out = net(data)
             loss = loss_fn(out, target)
-            loss_run = loss.item()
+            loss_epoch += loss.item()
             if batch_idx % log_interval == 0:
                 print('\rValidate Epoch: {} [{}/{} ({:.0f}%)]\tLoss for batch: {:.6f}'.format(
                     epoch, batch_idx * len(data), len(loader_val.dataset),
-                    100.0 * batch_idx / len(loader_val), loss.item()
+                    100.0 * batch_idx / len(loader_val), loss.item() / len(data)
                 ), end='')
 
-    loss = loss_run / len(loader_val.dataset)
-    print('\nValidate Epoch: {}  Loss Img Avg: {:.4f}\n'.format(epoch, loss))
-    return loss
+    return loss_epoch / len(loader_val.dataset)
 
 
 def main():
@@ -119,13 +103,15 @@ def main():
                                                batch_size=batch_sz,
                                                shuffle=False,
                                                pin_memory=pin_mem,
-                                               num_workers=workers)
+                                               num_workers=workers,
+                                               drop_last=True)
 
     loader_val = torch.utils.data.DataLoader(dataset=dataset_val,
                                              batch_size=batch_sz,
                                              shuffle=False,
                                              pin_memory=pin_mem,
-                                             num_workers=workers)
+                                             num_workers=workers,
+                                             drop_last=True)
 
     # Manually set seed for consistent initialization
     torch.manual_seed(1)
@@ -149,7 +135,7 @@ def main():
     # If continuing previous training
     if FLAG_LOAD_CP:
         print('Loading model and parameters from previous training...')
-        cp = torch.load(dir_model+'cp.tar')
+        cp = torch.load(dir_model+'best_model.tar')
         net.load_state_dict(cp['model_state_dict'])
         optimizer.load_state_dict(cp['optimizer_state_dict'])
         epoch = cp['epoch']
@@ -173,7 +159,9 @@ def main():
         val_loss.append(val_loss_epoch)
         end_time = time.time()
         epoch_time.append(end_time - start_time)
+        print('\nEpoch: {}  Train Loss: {}  Val Loss: {}'.format(epoch, train_loss_epoch, val_loss_epoch))
         print('epoch time {}'.format(end_time - start_time))
+        print('')
 
         torch.save({
             'model_state_dict': net.state_dict(),
