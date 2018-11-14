@@ -25,7 +25,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
     stacks PATCHES from images using the points as the training input image
     """
 
-    def __init__(self, data_directory, idx_begin, idx_end, rho=32, patch_sz=128, height=240, width=320, device='cpu'):
+    def __init__(self, data_directory, idx_begin, idx_end, rho=32, patch_sz=128, height=240, width=320):
         data_lst = glob(data_directory+'*.jpg')
         data_lst.sort()
         self.data_lst = data_lst[idx_begin:idx_end]
@@ -33,7 +33,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
         self.patch_sz = patch_sz
         self.height = height
         self.width = width
-        self.device = device
+
 
     def __getitem__(self, index):
         # Get random image, resize
@@ -68,10 +68,10 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
 
         # Stack patches to create input
         img_train = np.dstack([original_patch, warped_patch])
-        img_train = torch.from_numpy(img_train).float().to(device=self.device)
+        img_train = torch.from_numpy(img_train).float()
 
         H_four_points = np.subtract(np.array(perturbed_four_points), np.array(four_points))
-        target = torch.from_numpy(H_four_points.reshape(-1)).float().to(device=self.device)
+        target = torch.from_numpy(H_four_points.reshape(-1)).float()
 
         return img_train, target
 
