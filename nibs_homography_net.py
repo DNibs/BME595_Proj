@@ -29,7 +29,7 @@ class NibsNet1(nn.Module):
         self.bnorm2 = nn.BatchNorm2d(64)
 
         self.conv3 = nn.Conv2d(64, 64, 3, padding=1)
-        self.bnorm3 - nn.BatchNorm2d(64)
+        self.bnorm3 = nn.BatchNorm2d(64)
 
         self.conv4 = nn.Conv2d(64, 64, 3, padding=1)
         self.pool2 = nn.MaxPool2d(2)
@@ -89,7 +89,7 @@ class NibsNet1(nn.Module):
         x = self.bnorm9(x)
 
         x = self.fc2(x)
-        x = fn.tanh(x)
+        x = torch.tanh(x)
 
         return x
 

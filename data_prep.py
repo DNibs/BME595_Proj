@@ -68,6 +68,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
 
         # Stack patches to create input
         img_train = np.dstack([original_patch, warped_patch])
+        img_train = img_train.swapaxes(0, 2)
         img_train = torch.from_numpy(img_train).float()
 
         H_four_points = np.subtract(np.array(perturbed_four_points), np.array(four_points))
@@ -79,7 +80,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
         return len(self.data_lst)
 
 
-def build_datasets(dir_data, train_fraction = 0.85, test_number = 1000):
+def build_datasets(dir_data, train_fraction=0.85):
     """
     Create training, validation, and test data lists
     :param dir_data: folder containing all images
@@ -94,16 +95,31 @@ def build_datasets(dir_data, train_fraction = 0.85, test_number = 1000):
     lst_len = len(loc_list)
 
     # Partition dataset
-    train_idx_begin = 0
     train_idx_end = int(lst_len * train_fraction)
-    val_idx_begin = train_idx_end + 1
-    val_idx_end = lst_len - 1001
-    test_idx_begin = lst_len - 1000
-    test_idx_end = lst_len
 
-    train_dataset = CustomDataset(dir_data, train_idx_begin, train_idx_end)
-    val_dataset = CustomDataset(dir_data, val_idx_begin, val_idx_end)
-    test_dataset = CustomDataset(dir_data, test_idx_begin, test_idx_end)
+    train_dataset = CustomDataset(dir_data, 0, train_idx_end)
+    val_dataset = CustomDataset(dir_data, train_idx_end + 1, lst_len)
 
-    return train_dataset, val_dataset, test_dataset
+    return train_dataset, val_dataset
+
+
+def build_datasets_debugging(dir_data):
+    """
+    Smaller dataset for debugging purposes
+    :param dir_data:
+    :return:
+    """
+
+    # Read in images and sort
+    loc_list = glob(dir_data+'*.jpg')
+    loc_list.sort()
+    lst_len = len(loc_list)
+
+    # Partition dataset
+    train_idx_end = int(1000)
+
+    train_dataset = CustomDataset(dir_data, 0, train_idx_end)
+    val_dataset = CustomDataset(dir_data, train_idx_end + 1, 1101)
+
+    return train_dataset, val_dataset
 
