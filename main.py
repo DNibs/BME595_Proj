@@ -28,8 +28,9 @@ FLAG_DEBUG = False
 
 # Set Hyper Parameters
 batch_sz = 32
-learn_rt = 0.001
-wt_decay = 0.0005
+learn_rt = 0.005
+wt_decay = 0.001355
+momentum = 0.9
 
 # Set folder directories
 dir_model = './model/'
@@ -51,7 +52,7 @@ def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10)
         if batch_idx % log_interval == 0:
             print('\rTrain Epoch: {} [{}/{} ({:.0f}%)]\tLoss for batch: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(loader_train.dataset),
-                100.0 * batch_idx / len(loader_train), loss.item() / len(data)
+                100.0 * batch_idx / len(loader_train), loss.item()
             ), end='')
 
     return loss_epoch / len(loader_train)
@@ -70,7 +71,7 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
             if batch_idx % log_interval == 0:
                 print('\rValidate Epoch: {} [{}/{} ({:.0f}%)]\tLoss for batch: {:.6f}'.format(
                     epoch, batch_idx * len(data), len(loader_val.dataset),
-                    100.0 * batch_idx / len(loader_val), loss.item() / len(data)
+                    100.0 * batch_idx / len(loader_val), loss.item()
                 ), end='')
 
     return loss_epoch / len(loader_val)
@@ -122,20 +123,29 @@ def main():
 
     # Initialize Optimizer and Loss Function
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=learn_rt, weight_decay=wt_decay)
+    optimizer = torch.optim.SGD(net.parameters(), learn_rt, momentum=0.9, weight_decay=wt_decay)
 
     # Initialize running counters and helpful variables
     epoch = 0
     train_loss = []
     val_loss = []
     epoch_time = []
-    train_dataset_len = dataset_train.__len__()
     best_model_loss = 10000
 
     # If continuing previous training
-    if FLAG_LOAD_CP:
-        print('Loading model and parameters from previous training...')
+    if FLAG_LOAD_BEST_MODEL:
+        print('Loading model and parameters from best model...')
         cp = torch.load(dir_model+'best_model.tar')
+        net.load_state_dict(cp['model_state_dict'])
+        optimizer.load_state_dict(cp['optimizer_state_dict'])
+        epoch = cp['epoch']
+        train_loss = cp['train_loss']
+        val_loss = cp['val_loss']
+        epoch_time = cp['epoch_time']
+        best_model_loss = cp['best_model_loss']
+    elif FLAG_LOAD_CP:
+        print('Loading model and parameters from previous training...')
+        cp = torch.load(dir_model+'cp.tar')
         net.load_state_dict(cp['model_state_dict'])
         optimizer.load_state_dict(cp['optimizer_state_dict'])
         epoch = cp['epoch']
