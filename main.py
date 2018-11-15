@@ -3,6 +3,10 @@
 # Date: 05DEC18
 # main.py
 
+# Notes: Try ADAM again, normalize imgs in dataloader because loss should be way less, if that doesn't work
+#   then try dividing loss by static number prior to feeding into optimizer
+#   adjust the dropout/BN layers... ie remove BN after the first dropout as a paper says they create disharmony
+
 
 import matplotlib.pyplot as plt
 import time
