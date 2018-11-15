@@ -4,23 +4,16 @@
 # main.py
 
 
-import numpy as np
 import time
-import cv2
-import matplotlib.pyplot as plt
-import random
-from glob import glob
 import torch
-import torchvision
 import torch.nn as nn
-import torch.nn.functional as fn
 import data_prep
 import nibs_homography_net as nib
 
 
 # Set FLAGS
 FLAG_USE_GPU = True
-FLAG_LOAD_CP = True
+FLAG_LOAD_CP = False
 FLAG_LOAD_BEST_MODEL = False
 FLAG_TRAIN = True
 FLAG_DEBUG = False
@@ -28,7 +21,7 @@ FLAG_DEBUG = False
 # Set Hyper Parameters
 batch_sz = 64
 init_learn_rt = 0.005
-learn_rt_decay_epoch = 10
+learn_rt_decay_epoch = 15
 wt_decay = 0.001355
 momentum = 0.9
 
@@ -79,7 +72,7 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
 
 def exp_lr_scheduler(optimizer, epoch, init_lr, lr_decay_epoch):
 
-    lr = init_lr * (0.1**(epoch // lr_decay_epoch))
+    lr = init_lr * (0.5**(epoch // lr_decay_epoch))
 
     if epoch % lr_decay_epoch == 0:
         print('LR is set to {}'.format(lr))
@@ -143,7 +136,8 @@ def main():
     train_loss = []
     val_loss = []
     epoch_time = []
-    best_model_loss = 10000
+    learn_rt = []
+    best_model_loss = 1000
 
     # If continuing previous training
     if FLAG_LOAD_BEST_MODEL:
@@ -176,24 +170,27 @@ def main():
     while epoch < 500:
 
         epoch += 1
-        optimizer, learn_rt = exp_lr_scheduler(optimizer, epoch,
+        optimizer, learn_rt_epoch = exp_lr_scheduler(optimizer, epoch,
                                                init_lr=init_learn_rt, lr_decay_epoch=learn_rt_decay_epoch)
         start_time = time.time()
         train_loss_epoch = train(net, device, loader_train, optimizer, loss_fn, epoch)
         print('')
-        train_loss.append(train_loss_epoch)
         val_loss_epoch = validate(net, device, loader_val, loss_fn, epoch)
-        val_loss.append(val_loss_epoch)
         end_time = time.time()
-        epoch_time.append(end_time - start_time)
+
         print('\nEpoch: {}  \tTime {} \tLearn Rate: {} \tTrain Loss: {} \tVal Loss: {}'.format(epoch,
                                                                                                end_time - start_time,
-                                                                                               learn_rt,
+                                                                                               learn_rt_epoch,
                                                                                                train_loss_epoch,
                                                                                                val_loss_epoch))
         print('')
 
         # Save model and metrics
+        train_loss.append(train_loss_epoch)
+        val_loss.append(val_loss_epoch)
+        epoch_time.append(end_time - start_time)
+        learn_rt.append(learn_rt_epoch)
+
         torch.save({
             'model_state_dict': net.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
