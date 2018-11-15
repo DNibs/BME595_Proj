@@ -26,6 +26,7 @@ wt_decay = 0.001355
 momentum = 0.9
 
 dir_model = './model/'
+dir_metric = './metrics/'
 
 net = nib.NibsNet1()
 optimizer = torch.optim.SGD(net.parameters(), learn_rt, momentum=0.9, weight_decay=wt_decay)
@@ -44,26 +45,47 @@ best_model_loss = cp['best_model_loss']
 print('Current Epoch: {}'.format(epoch))
 print('Best loss achieved: {}'.format(best_model_loss))
 
+print(val_loss)
+print(epoch_time)
+
 plt.figure(0)
 plt.plot(train_loss)
+plt.plot(val_loss)
+plt.ylabel('Error')
+plt.xlabel('Epoch')
+plt.legend(['Train Loss, Val Loss'])
+plt.suptitle('Training vs Validation Loss')
+plt.savefig(dir_metric + 'train_val_{}.tiff'.format(epoch))
 
+plt.figure(1)
+plt.plot(train_loss)
+plt.ylabel('Error')
+plt.xlabel('Epochs')
+plt.legend('Training')
+plt.suptitle('Training loss')
+plt.savefig(dir_metric + 'train_{}.tiff'.format(epoch))
+
+plt.figure(2)
 plt.plot(val_loss)
 plt.ylabel('Error')
 plt.xlabel('Epochs')
-plt.legend(['Training', 'Validation'])
-plt.suptitle('Validate and Training loss')
+plt.legend('Validation')
+plt.suptitle('Validate loss')
+plt.savefig(dir_metric + 'val_{}.tiff'.format(epoch))
 
-plt.figure(1)
+plt.figure(3)
 plt.plot(epoch_time)
 plt.ylabel('Time (s)')
 plt.xlabel('Epochs')
 plt.suptitle('Train and Validation Time per Epoch')
+plt.savefig(dir_metric + 'time_{}.tiff'.format(epoch))
 
-plt.figure(2)
+plt.figure(4)
 plt.plot(learn_rt)
 plt.ylabel('Learn Rate')
 plt.xlabel('Epochs')
 plt.suptitle('Learn Rate Adjustments per Epoch')
+plt.savefig(dir_metric + 'learn_rt_{}.tiff'.format(epoch))
 
 plt.show()
 

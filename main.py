@@ -4,6 +4,7 @@
 # main.py
 
 
+import matplotlib.pyplot as plt
 import time
 import torch
 import torch.nn as nn
@@ -14,20 +15,21 @@ import nibs_homography_net as nib
 # Set FLAGS
 FLAG_USE_GPU = True
 FLAG_LOAD_CP = False
-FLAG_LOAD_BEST_MODEL = False
+FLAG_LOAD_BEST_MODEL = True
 FLAG_TRAIN = True
 FLAG_DEBUG = False
 
 # Set Hyper Parameters
 batch_sz = 64
 init_learn_rt = 0.005
-learn_rt_decay_epoch = 15
+learn_rt_decay_epoch = 30
 wt_decay = 0.001355
 momentum = 0.9
 
 # Set folder directories
 dir_model = './model/'
 dir_data = '../MSCOCO/unlabeled2017/'
+dir_metric = './metrics/'
 
 
 def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10):
@@ -67,6 +69,9 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
                     100.0 * batch_idx / len(loader_val), loss.item()
                 ), end='')
 
+        # print(loss_epoch)
+        # print(len(loader_val))
+
     return loss_epoch / len(loader_val)
 
 
@@ -81,6 +86,48 @@ def exp_lr_scheduler(optimizer, epoch, init_lr, lr_decay_epoch):
         param_group['lr'] = lr
 
     return optimizer, lr
+
+
+def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
+
+    plt.figure(0)
+    plt.plot(train_loss)
+    plt.plot(val_loss)
+    plt.ylabel('Error')
+    plt.xlabel('Epoch')
+    plt.legend(['Train Loss, Val Loss'])
+    plt.suptitle('Training vs Validation Loss')
+    plt.savefig(dir_metric+'train_val_{}.tiff'.format(epoch))
+
+    plt.figure(1)
+    plt.plot(train_loss)
+    plt.ylabel('Error')
+    plt.xlabel('Epochs')
+    plt.legend('Training')
+    plt.suptitle('Training loss')
+    plt.savefig(dir_metric+'train_{}.tiff'.format(epoch))
+
+    plt.figure(2)
+    plt.plot(val_loss)
+    plt.ylabel('Error')
+    plt.xlabel('Epochs')
+    plt.legend('Validation')
+    plt.suptitle('Validate loss')
+    plt.savefig(dir_metric+'val_{}.tiff'.format(epoch))
+
+    plt.figure(3)
+    plt.plot(epoch_time)
+    plt.ylabel('Time (s)')
+    plt.xlabel('Epochs')
+    plt.suptitle('Train and Validation Time per Epoch')
+    plt.savefig(dir_metric+'time_{}.tiff'.format(epoch))
+
+    plt.figure(4)
+    plt.plot(learn_rt)
+    plt.ylabel('Learn Rate')
+    plt.xlabel('Epochs')
+    plt.suptitle('Learn Rate Adjustments per Epoch')
+    plt.savefig(dir_metric+'learn_rt_{}.tiff'.format(epoch))
 
 
 def main():
@@ -170,8 +217,10 @@ def main():
     while epoch < 500:
 
         epoch += 1
-        optimizer, learn_rt_epoch = exp_lr_scheduler(optimizer, epoch,
-                                               init_lr=init_learn_rt, lr_decay_epoch=learn_rt_decay_epoch)
+        optimizer, learn_rt_epoch = exp_lr_scheduler(optimizer,
+                                                     epoch,
+                                                     init_lr=init_learn_rt,
+                                                     lr_decay_epoch=learn_rt_decay_epoch)
         start_time = time.time()
         train_loss_epoch = train(net, device, loader_train, optimizer, loss_fn, epoch)
         print('')
@@ -190,6 +239,7 @@ def main():
         val_loss.append(val_loss_epoch)
         epoch_time.append(end_time - start_time)
         learn_rt.append(learn_rt_epoch)
+        plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch)
 
         torch.save({
             'model_state_dict': net.state_dict(),
