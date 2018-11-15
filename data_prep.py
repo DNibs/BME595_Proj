@@ -70,7 +70,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
         img_train = np.dstack([original_patch, warped_patch])
         img_train = img_train.swapaxes(0, 2)
         img_train = img_train.swapaxes(1, 2)
-        img_train = torch.from_numpy(img_train)
+        img_train = torch.from_numpy(img_train).float()
 
         H_four_points = np.subtract(np.array(perturbed_four_points), np.array(four_points))
         target = torch.from_numpy(H_four_points.reshape(-1)).float()
