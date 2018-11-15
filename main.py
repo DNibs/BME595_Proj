@@ -14,8 +14,9 @@ import nibs_homography_net as nib
 
 # Set FLAGS
 FLAG_USE_GPU = True
-FLAG_LOAD_CP = False
-FLAG_LOAD_BEST_MODEL = True
+FLAG_LOAD_CP = True
+FLAG_LOAD_BEST_VAL_MODEL = False
+FLAG_LOAD_BEST_TRAIN_MODEL = False
 FLAG_TRAIN = True
 FLAG_DEBUG = False
 
@@ -103,7 +104,6 @@ def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
     plt.plot(train_loss)
     plt.ylabel('Error')
     plt.xlabel('Epochs')
-    plt.legend('Training')
     plt.suptitle('Training loss')
     plt.savefig(dir_metric+'train_{}.tiff'.format(epoch))
 
@@ -111,7 +111,6 @@ def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
     plt.plot(val_loss)
     plt.ylabel('Error')
     plt.xlabel('Epochs')
-    plt.legend('Validation')
     plt.suptitle('Validate loss')
     plt.savefig(dir_metric+'val_{}.tiff'.format(epoch))
 
@@ -184,12 +183,13 @@ def main():
     val_loss = []
     epoch_time = []
     learn_rt = []
-    best_model_loss = 1000
+    best_val_model_loss = 0
+    best_train_model_loss = 0
 
     # If continuing previous training
-    if FLAG_LOAD_BEST_MODEL:
+    if FLAG_LOAD_BEST_VAL_MODEL:
         print('Loading model and parameters from best model...')
-        cp = torch.load(dir_model+'best_model.tar')
+        cp = torch.load(dir_model+'best_val_model.tar')
         net.load_state_dict(cp['model_state_dict'])
         optimizer.load_state_dict(cp['optimizer_state_dict'])
         epoch = cp['epoch']
@@ -197,7 +197,20 @@ def main():
         val_loss = cp['val_loss']
         epoch_time = cp['epoch_time']
         learn_rt = cp['learn_rt']
-        best_model_loss = cp['best_model_loss']
+        best_val_model_loss = cp['best_val_model_loss']
+        best_train_model_loss = cp['best_train_model_loss']
+    elif FLAG_LOAD_BEST_TRAIN_MODEL:
+        print('Loading model and parameters from best model...')
+        cp = torch.load(dir_model + 'best_train_model.tar')
+        net.load_state_dict(cp['model_state_dict'])
+        optimizer.load_state_dict(cp['optimizer_state_dict'])
+        epoch = cp['epoch']
+        train_loss = cp['train_loss']
+        val_loss = cp['val_loss']
+        epoch_time = cp['epoch_time']
+        learn_rt = cp['learn_rt']
+        best_val_model_loss = cp['best_val_model_loss']
+        best_train_model_loss = cp['best_train_model_loss']
     elif FLAG_LOAD_CP:
         print('Loading model and parameters from previous training...')
         cp = torch.load(dir_model+'cp.tar')
@@ -208,7 +221,8 @@ def main():
         val_loss = cp['val_loss']
         epoch_time = cp['epoch_time']
         learn_rt = cp['learn_rt']
-        best_model_loss = cp['best_model_loss']
+        best_val_model_loss = cp['best_val_model_loss']
+        best_train_model_loss = cp['best_train_model_loss']
     else:
         print('Starting with fresh model...')
 
@@ -249,11 +263,12 @@ def main():
             'val_loss': val_loss,
             'epoch_time': epoch_time,
             'learn_rt': learn_rt,
-            'best_model_loss': best_model_loss
+            'best_train_model_loss': best_train_model_loss,
+            'best_val_model_loss': best_val_model_loss
         }, dir_model+'cp.tar'.format(epoch))
 
-        if val_loss_epoch < best_model_loss:
-            best_model_loss = val_loss_epoch
+        if val_loss_epoch < best_val_model_loss:
+            best_val_model_loss = val_loss_epoch
             torch.save({
                 'model_state_dict': net.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
@@ -262,8 +277,23 @@ def main():
                 'val_loss': val_loss,
                 'epoch_time': epoch_time,
                 'learn_rt': learn_rt,
-                'best_model_loss': best_model_loss
-            }, dir_model + 'best_model.tar'.format(epoch))
+                'best_train_model_loss': best_train_model_loss,
+                'best_val_model_loss': best_val_model_loss
+            }, dir_model + 'best_val_model.tar'.format(epoch))
+
+        if train_loss_epoch < best_train_model_loss:
+            best_train_model_loss = train_loss_epoch
+            torch.save({
+                'model_state_dict': net.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'epoch': epoch,
+                'train_loss': train_loss,
+                'val_loss': val_loss,
+                'epoch_time': epoch_time,
+                'learn_rt': learn_rt,
+                'best_train_model_loss': best_train_model_loss,
+                'best_val_model_loss': best_val_model_loss
+            }, dir_model + 'best_train_model.tar'.format(epoch))
 
 
 if __name__ == '__main__':
