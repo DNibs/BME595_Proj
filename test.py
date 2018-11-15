@@ -17,45 +17,31 @@ import torchvision
 
 # Set Hyperparameters
 FLAG_USE_GPU = True
+dir_data = '../MSCOCO/unlabeled2017/'
+batch_sz = 32
+
+# Prepare Data
+print('Preparing Data...')
+
+dataset_train, dataset_val = data_prep.build_datasets_debugging(dir_data)
 
 
-def main():
+loader_train = torch.utils.data.DataLoader(dataset=dataset_train,
+                                           batch_size=batch_sz,
+                                           shuffle=False,
+                                           drop_last=True)
 
-    if torch.cuda.is_available() and FLAG_USE_GPU:
-        device = torch.device('cuda:0')
-        pin_mem = True
-        workers = 8
-    else:
-        device = torch.device('cpu')
-        pin_mem = False
-        workers = 0
-    print('device = {}'.format(device))
+loader_val = torch.utils.data.DataLoader(dataset=dataset_val,
+                                         batch_size=batch_sz,
+                                         shuffle=False,
+                                         drop_last=True)
 
-    dir_data = '../MSCOCO/unlabeled2017/'
+for batch_idx, (data, target) in enumerate(loader_train):
 
-    train_dataset, val_dataset, test_dataset = data_prep.build_datasets(dir_data)
-
-    # print(train_dataset.__len__())
-    # print(val_dataset.__len__())
-    # print(test_dataset.__len__())
-    #
-    # im1, t1 = train_dataset.__getitem__(5)
-    #
-    # print(im1.size())
-
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                               batch_size=32,
-                                               shuffle=False,
-                                               pin_memory=pin_mem,
-                                               num_workers=workers)
-
-    i = 0
-    for images, target in train_loader:
-        print(images.size())
-        images = images.to(device)
-        print(images.get_device())
-        i += 1
-        print(i)
-
-if __name__ == '__main__':
-    main()
+    print(data.size())
+    print(data.type())
+    plt.figure(0)
+    plt.imshow(data[0, 0, :, :])
+    plt.figure(1)
+    plt.imshow(data[0, 1, :, :])
+    plt.show()

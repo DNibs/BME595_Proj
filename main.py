@@ -27,7 +27,7 @@ FLAG_TRAIN = True
 FLAG_DEBUG = False
 
 # Set Hyper Parameters
-batch_sz = 32
+batch_sz = 64
 learn_rt = 0.005
 wt_decay = 0.001355
 momentum = 0.9
@@ -172,6 +172,7 @@ def main():
         print('epoch time {}'.format(end_time - start_time))
         print('')
 
+        # Save model and metrics
         torch.save({
             'model_state_dict': net.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
@@ -183,6 +184,7 @@ def main():
         }, dir_model+'cp.tar'.format(epoch))
 
         if val_loss_epoch < best_model_loss:
+            best_model_loss = val_loss_epoch
             torch.save({
                 'model_state_dict': net.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),

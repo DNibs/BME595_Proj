@@ -69,7 +69,8 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
         # Stack patches to create input
         img_train = np.dstack([original_patch, warped_patch])
         img_train = img_train.swapaxes(0, 2)
-        img_train = torch.from_numpy(img_train).float()
+        img_train = img_train.swapaxes(1, 2)
+        img_train = torch.from_numpy(img_train)
 
         H_four_points = np.subtract(np.array(perturbed_four_points), np.array(four_points))
         target = torch.from_numpy(H_four_points.reshape(-1)).float()
@@ -122,4 +123,6 @@ def build_datasets_debugging(dir_data):
     val_dataset = CustomDataset(dir_data, train_idx_end + 1, 1101)
 
     return train_dataset, val_dataset
+
+
 
