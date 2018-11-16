@@ -22,8 +22,8 @@ FLAG_DEBUG = False
 
 # Set Hyper Parameters
 batch_sz = 64
-init_learn_rt = 0.005
-learn_rt_decay_epoch = 30
+init_learn_rt_adam = 0.002
+learn_rt_decay_epoch = 20
 wt_decay = 0.001355
 momentum = 0.9
 
@@ -98,35 +98,35 @@ def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
     plt.xlabel('Epoch')
     plt.legend(['Train Loss, Val Loss'])
     plt.suptitle('Training vs Validation Loss')
-    plt.savefig(dir_metric+'train_val_{}.tiff'.format(epoch))
+    plt.savefig(dir_metric+'{}_train_val.tiff'.format(epoch))
 
     plt.figure(1)
     plt.plot(train_loss)
     plt.ylabel('Error')
     plt.xlabel('Epochs')
     plt.suptitle('Training loss')
-    plt.savefig(dir_metric+'train_{}.tiff'.format(epoch))
+    plt.savefig(dir_metric+'{}_train.tiff'.format(epoch))
 
     plt.figure(2)
     plt.plot(val_loss)
     plt.ylabel('Error')
     plt.xlabel('Epochs')
     plt.suptitle('Validate loss')
-    plt.savefig(dir_metric+'val_{}.tiff'.format(epoch))
+    plt.savefig(dir_metric+'{}_val.tiff'.format(epoch))
 
     plt.figure(3)
     plt.plot(epoch_time)
     plt.ylabel('Time (s)')
     plt.xlabel('Epochs')
     plt.suptitle('Train and Validation Time per Epoch')
-    plt.savefig(dir_metric+'time_{}.tiff'.format(epoch))
+    plt.savefig(dir_metric+'{}_time.tiff'.format(epoch))
 
     plt.figure(4)
     plt.plot(learn_rt)
     plt.ylabel('Learn Rate')
     plt.xlabel('Epochs')
     plt.suptitle('Learn Rate Adjustments per Epoch')
-    plt.savefig(dir_metric+'learn_rt_{}.tiff'.format(epoch))
+    plt.savefig(dir_metric+'{}learn_rt.tiff'.format(epoch))
 
 
 def main():
@@ -175,7 +175,7 @@ def main():
 
     # Initialize Optimizer and Loss Function
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.SGD(net.parameters(), init_learn_rt, momentum=0.9, weight_decay=wt_decay)
+    optimizer = torch.optim.Adam(net.parameters(), lr=init_learn_rt_adam, weight_decay=wt_decay)
 
     # Initialize running counters and helpful variables
     epoch = 0
@@ -233,7 +233,7 @@ def main():
         epoch += 1
         optimizer, learn_rt_epoch = exp_lr_scheduler(optimizer,
                                                      epoch,
-                                                     init_lr=init_learn_rt,
+                                                     init_lr=init_learn_rt_adam,
                                                      lr_decay_epoch=learn_rt_decay_epoch)
         start_time = time.time()
         train_loss_epoch = train(net, device, loader_train, optimizer, loss_fn, epoch)

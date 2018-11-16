@@ -67,7 +67,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
         warped_patch = inv_warped_image[m:m + self.patch_sz, n:n + self.patch_sz]
 
         # Stack patches to create input
-        img_train = np.dstack([original_patch, warped_patch])
+        img_train = np.dstack([((original_patch / 255.0) - 0.456) / 0.224, ((warped_patch / 255.0) - 0.456) / 0.224])
         img_train = img_train.swapaxes(0, 2)
         img_train = img_train.swapaxes(1, 2)
         img_train = torch.from_numpy(img_train).float()
