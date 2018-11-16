@@ -58,7 +58,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
 
         # calculate H
         H = cv2.getPerspectiveTransform(np.float32(four_points), np.float32(perturbed_four_points))
-        H_inverse = np.linalg.inv(H)
+        H_inverse = np.linalg.pinv(H)
         inv_warped_image = cv2.warpPerspective(img, H_inverse, (320, 240))
         # warped_image = cv2.warpPerspective(img, H, (320, 240))
 
