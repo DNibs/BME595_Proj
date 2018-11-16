@@ -74,9 +74,6 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
                     100.0 * batch_idx / len(loader_val), loss.item()
                 ), end='')
 
-        # print(loss_epoch)
-        # print(len(loader_val))
-
     return loss_epoch / len(loader_val)
 
 
@@ -96,13 +93,14 @@ def exp_lr_scheduler(optimizer, epoch, init_lr, lr_decay_epoch):
 def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
 
     plt.figure(0)
-    plt.plot(train_loss)
-    plt.plot(val_loss)
+    plt.plot(train_loss, label='Train Loss')
+    plt.plot(val_loss, label="Validation Loss")
+    plt.legend(loc="upper right")
     plt.ylabel('Error')
     plt.xlabel('Epoch')
-    plt.legend(['Train Loss, Val Loss'])
-    plt.suptitle('Training vs Validation Loss')
+    plt.title('Training vs Validation Loss')
     plt.savefig(dir_metric+'{}_train_val.tiff'.format(epoch))
+    plt.clf()
 
     plt.figure(1)
     plt.plot(train_loss)
@@ -110,6 +108,7 @@ def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
     plt.xlabel('Epochs')
     plt.suptitle('Training loss')
     plt.savefig(dir_metric+'{}_train.tiff'.format(epoch))
+    plt.clf()
 
     plt.figure(2)
     plt.plot(val_loss)
@@ -117,6 +116,7 @@ def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
     plt.xlabel('Epochs')
     plt.suptitle('Validate loss')
     plt.savefig(dir_metric+'{}_val.tiff'.format(epoch))
+    plt.clf()
 
     plt.figure(3)
     plt.plot(epoch_time)
@@ -124,13 +124,15 @@ def plot_metrics(train_loss, val_loss, epoch_time, learn_rt, epoch):
     plt.xlabel('Epochs')
     plt.suptitle('Train and Validation Time per Epoch')
     plt.savefig(dir_metric+'{}_time.tiff'.format(epoch))
+    plt.clf()
 
     plt.figure(4)
     plt.plot(learn_rt)
     plt.ylabel('Learn Rate')
     plt.xlabel('Epochs')
     plt.suptitle('Learn Rate Adjustments per Epoch')
-    plt.savefig(dir_metric+'{}learn_rt.tiff'.format(epoch))
+    plt.savefig(dir_metric+'{}_learn_rt.tiff'.format(epoch))
+    plt.clf()
 
 
 def main():
@@ -187,8 +189,8 @@ def main():
     val_loss = []
     epoch_time = []
     learn_rt = []
-    best_val_model_loss = 0
-    best_train_model_loss = 0
+    best_val_model_loss = 500
+    best_train_model_loss = 500
 
     # If continuing previous training
     if FLAG_LOAD_BEST_VAL_MODEL:
