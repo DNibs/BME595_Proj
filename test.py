@@ -81,7 +81,7 @@ def test_NibsNet():
 
 
     net = nib.NibsNet1()
-    cp = torch.load(dir_model + 'best_train_model.tar')
+    cp = torch.load(dir_model + 'best_val_model.tar')
     net.load_state_dict(cp['model_state_dict'])
     net.eval()
 

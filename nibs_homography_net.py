@@ -84,11 +84,11 @@ class NibsNet1(nn.Module):
         x = self.drop1(x)
         x = self.bnorm8(x)
 
-        x = fn.relu(self.fc1(x))
+        x = fn.tanh(self.fc1(x))
         x = self.drop2(x)
         x = self.bnorm9(x)
 
-        x = fn.relu(self.fc2(x))
+        x = self.fc2(x)
 
         return x
 

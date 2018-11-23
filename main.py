@@ -18,7 +18,7 @@ import nibs_homography_net as nib
 
 # Set FLAGS
 FLAG_USE_GPU = True
-FLAG_LOAD_CP = True
+FLAG_LOAD_CP = False
 FLAG_LOAD_BEST_VAL_MODEL = False
 FLAG_LOAD_BEST_TRAIN_MODEL = False
 FLAG_TRAIN = True
@@ -45,10 +45,7 @@ def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10)
         data, target = data.to(device), target.to(device=device)
         optimizer.zero_grad()
         out = net(data)
-        print(target[0])
-        print(out[0])
-        print("")
-        loss = loss_fn(out, target) / 350
+        loss = loss_fn(out, target)
         loss_epoch += loss.item()
         loss.backward()
         optimizer.step()
@@ -69,7 +66,7 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
         for batch_idx, (data, target) in enumerate(loader_val):
             data, target = data.to(device=device), target.to(device=device)
             out = net(data)
-            loss = loss_fn(out, target) / 350
+            loss = loss_fn(out, target)
             loss_epoch += loss.item()
             if batch_idx % log_interval == 0:
                 print('\rValidate Epoch: {} [{}/{} ({:.0f}%)]\tLoss for batch: {:.6f}'.format(
