@@ -45,7 +45,10 @@ def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10)
         data, target = data.to(device), target.to(device=device)
         optimizer.zero_grad()
         out = net(data)
-        loss = loss_fn(out, target)
+        print(target[0])
+        print(out[0])
+        print("")
+        loss = loss_fn(out, target) / 350
         loss_epoch += loss.item()
         loss.backward()
         optimizer.step()
@@ -66,7 +69,7 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
         for batch_idx, (data, target) in enumerate(loader_val):
             data, target = data.to(device=device), target.to(device=device)
             out = net(data)
-            loss = loss_fn(out, target)
+            loss = loss_fn(out, target) / 350
             loss_epoch += loss.item()
             if batch_idx % log_interval == 0:
                 print('\rValidate Epoch: {} [{}/{} ({:.0f}%)]\tLoss for batch: {:.6f}'.format(
