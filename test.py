@@ -61,6 +61,7 @@ def test_NibsNet():
     H = cv2.getPerspectiveTransform(np.float32(four_points), np.float32(perturbed_four_points))
     H_inverse = np.linalg.pinv(H)
     inv_warped_image = cv2.warpPerspective(img_g, H_inverse, (320, 240))
+    inv_warped_image_c = cv2.warpPerspective(img, H_inverse, (320, 240))
     # warped_image = cv2.warpPerspective(img, H, (320, 240))
 
     # grab image patches
@@ -89,11 +90,22 @@ def test_NibsNet():
     out = net(model_input)
 
     print(out)
+    print(out[0, 0].item())
 
+    dif_out = [[out[0, 0].item(), out[0, 1].item()],
+               [out[0, 2].item(), out[0, 3].item()],
+               [out[0, 4].item(), out[0, 5].item()],
+               [out[0, 6].item(), out[0, 7].item()]]
+    pts_out_flip = ((int(out[0, 0].item()) + m, int(out[0, 1].item()) + n),
+               (int(out[0, 2].item()) + m + patch_sz, int(out[0, 3].item()) + n),
+               (int(out[0, 4].item()) + m + patch_sz, int(out[0, 5].item()) + n + patch_sz),
+               (int(out[0, 6].item()) + m, int(out[0, 7].item()) + n + patch_sz))
+    print(dif_out)
 
 
     pts = [(b, a) for a, b in four_points]
     pts_wpd = [(b, a) for a, b in perturbed_four_points]
+    pts_out = [(b, a) for a, b in pts_out_flip]
 
     img_cpy1 = img.copy()
     cv2.line(img_cpy1, pts[0], pts[1], (0, 0, 255), thickness=2)
@@ -107,11 +119,16 @@ def test_NibsNet():
     cv2.line(img_cpy2, pts_wpd[3], pts_wpd[2], (0, 255, 0), thickness=2)
     cv2.line(img_cpy2, pts_wpd[1], pts_wpd[2], (0, 255, 0), thickness=2)
 
-    img_wpd_cpy = inv_warped_image.copy()
+    img_wpd_cpy = inv_warped_image_c.copy()
     cv2.line(img_wpd_cpy, pts_wpd[0], pts_wpd[1], (0, 0, 255), thickness=2)
     cv2.line(img_wpd_cpy, pts_wpd[0], pts_wpd[3], (0, 0, 255), thickness=2)
     cv2.line(img_wpd_cpy, pts_wpd[3], pts_wpd[2], (0, 0, 255), thickness=2)
     cv2.line(img_wpd_cpy, pts_wpd[1], pts_wpd[2], (0, 0, 255), thickness=2)
+
+    cv2.line(img_wpd_cpy, pts_out[0], pts_out[1], (255, 0, 0), thickness=2)
+    cv2.line(img_wpd_cpy, pts_out[0], pts_out[3], (255, 0, 0), thickness=2)
+    cv2.line(img_wpd_cpy, pts_out[3], pts_out[2], (255, 0, 0), thickness=2)
+    cv2.line(img_wpd_cpy, pts_out[1], pts_out[2], (255, 0, 0), thickness=2)
 
     plt.figure(0)
     plt.imshow(img_cpy1)
@@ -124,6 +141,7 @@ def test_NibsNet():
 
     plt.figure(3)
     plt.imshow(warped_patch)
+
 
     plt.show()
 
