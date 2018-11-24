@@ -42,6 +42,7 @@ def test_NibsNet():
     img = cv2.imread(fp)
     img_g = cv2.imread(fp, 0)
     img = cv2.resize(img, (width, height))
+    img_g = cv2.resize(img_g, (width, height))
 
     # Create point for corners of image patch
     m = random.randint(rho, height - rho - patch_sz)  # row
@@ -102,6 +103,12 @@ def test_NibsNet():
                (int(out[0, 6].item()) + m, int(out[0, 7].item()) + n + patch_sz))
     print(dif_out)
 
+    error = H_four_points - dif_out
+    error = abs(error)
+    error = sum(error)
+    mace = error / 4
+
+    print('MACE {}'.format(mace))
 
     pts = [(b, a) for a, b in four_points]
     pts_wpd = [(b, a) for a, b in perturbed_four_points]
