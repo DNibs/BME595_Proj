@@ -83,6 +83,7 @@ def test_NibsNet():
     target = torch.from_numpy(H_four_points.reshape(-1)).float()
 
     print(H_four_points)
+    print(target)
 
     net = nib.NibsNet1()
     cp = torch.load(dir_model + 'best_val_model.tar')
@@ -93,26 +94,28 @@ def test_NibsNet():
     out = net(model_input)
 
 
-    # dif_out = [[out[0, 0].item(), out[0, 1].item()],
-    #            [out[0, 2].item(), out[0, 3].item()],
-    #            [out[0, 4].item(), out[0, 5].item()],
-    #            [out[0, 6].item(), out[0, 7].item()]]
-    # pts_out_flip = ((int(out[0, 0].item()) + m, int(out[0, 1].item()) + n),
-    #            (int(out[0, 2].item()) + m + patch_sz, int(out[0, 3].item()) + n),
-    #            (int(out[0, 4].item()) + m + patch_sz, int(out[0, 5].item()) + n + patch_sz),
-    #            (int(out[0, 6].item()) + m, int(out[0, 7].item()) + n + patch_sz))
-    # print(dif_out)
-    #
-    # error = H_four_points - dif_out
-    # print('error {}'.format(error))
-    # mace = np.linalg.norm(error) / 4
-    # print('MACE {}'.format(mace))
+    dif_out = [[out[0, 0].item(), out[0, 1].item()],
+               [out[0, 2].item(), out[0, 3].item()],
+               [out[0, 4].item(), out[0, 5].item()],
+               [out[0, 6].item(), out[0, 7].item()]]
+    pts_out_flip = ((int(out[0, 0].item()) + m, int(out[0, 1].item()) + n),
+               (int(out[0, 2].item()) + m + patch_sz, int(out[0, 3].item()) + n),
+               (int(out[0, 4].item()) + m, int(out[0, 5].item()) + n + patch_sz),
+               (int(out[0, 6].item()) + m + patch_sz, int(out[0, 7].item()) + n + patch_sz))
+    print(out)
+    print(dif_out)
+
+    error = H_four_points - dif_out
+    print('error {}'.format(error))
+    mace = np.linalg.norm(error) / 4
+    print('MACE {}'.format(mace))
 
     # pts = [(b, a) for a, b in four_points]
     pts = four_points
     # pts_wpd = [(b, a) for a, b in perturbed_four_points]
     pts_wpd = perturbed_four_points
     # pts_out = [(b, a) for a, b in pts_out_flip]
+    pts_out = pts_out_flip
 
     img_cpy1 = img.copy()
     cv2.line(img_cpy1, pts[0], pts[1], (0, 0, 255), thickness=2)
@@ -128,10 +131,10 @@ def test_NibsNet():
     cv2.line(img_wpd_cpy, pts_wpd[1], pts_wpd[3], (0, 0, 255), thickness=2)
     cv2.line(img_wpd_cpy, pts_wpd[2], pts_wpd[3], (0, 0, 255), thickness=2)
 
-    # cv2.line(img_wpd_cpy, pts_out[0], pts_out[1], (255, 0, 0), thickness=2)
-    # cv2.line(img_wpd_cpy, pts_out[0], pts_out[2], (255, 0, 0), thickness=2)
-    # cv2.line(img_wpd_cpy, pts_out[1], pts_out[3], (255, 0, 0), thickness=2)
-    # cv2.line(img_wpd_cpy, pts_out[2], pts_out[3], (255, 0, 0), thickness=2)
+    cv2.line(img_wpd_cpy, pts_out[0], pts_out[1], (255, 0, 0), thickness=2)
+    cv2.line(img_wpd_cpy, pts_out[0], pts_out[2], (255, 0, 0), thickness=2)
+    cv2.line(img_wpd_cpy, pts_out[1], pts_out[3], (255, 0, 0), thickness=2)
+    cv2.line(img_wpd_cpy, pts_out[2], pts_out[3], (255, 0, 0), thickness=2)
 
     plt.figure(0)
     plt.imshow(img_cpy1)
