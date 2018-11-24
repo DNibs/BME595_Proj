@@ -27,7 +27,7 @@ FLAG_DEBUG = False
 # Set Hyper Parameters
 batch_sz = 64
 init_learn_rt_adam = 0.002
-learn_rt_decay_epoch = 20
+learn_rt_decay_epoch = 13
 wt_decay = 0.001355
 momentum = 0.9
 

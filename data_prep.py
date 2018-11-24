@@ -43,14 +43,14 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
         img = cv2.resize(img, (self.width, self.height))
 
         # Create point for corners of image patch
-        m = random.randint(self.rho, self.height - self.rho - self.patch_sz)  # row
-        n = random.randint(self.rho, self.width - self.rho - self.patch_sz)  # col
+        m = random.randint(self.rho, self.width - self.rho - self.patch_sz)  # col
+        n = random.randint(self.rho, self.height - self.rho - self.patch_sz)  # row
         # define corners of image patch
         top_left_point = (m, n)
-        bottom_left_point = (self.patch_sz + m, n)
+        bottom_left_point = (m, self.patch_sz + n)
         bottom_right_point = (self.patch_sz + m, self.patch_sz + n)
-        top_right_point = (m, self.patch_sz + n)
-        four_points = [top_left_point, bottom_left_point, bottom_right_point, top_right_point]
+        top_right_point = (self.patch_sz + m, n)
+        four_points = [top_left_point, top_right_point, bottom_left_point, bottom_right_point]
         perturbed_four_points = []
         for point in four_points:
             perturbed_four_points.append(
@@ -58,13 +58,13 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
 
         # calculate H
         H = cv2.getPerspectiveTransform(np.float32(four_points), np.float32(perturbed_four_points))
-        H_inverse = np.linalg.pinv(H)
-        inv_warped_image = cv2.warpPerspective(img, H_inverse, (320, 240))
-        # warped_image = cv2.warpPerspective(img, H, (320, 240))
+        # H_inverse = np.linalg.pinv(H)
+        # inv_warped_image = cv2.warpPerspective(img, H_inverse, (320, 240))
+        warped_image = cv2.warpPerspective(img, H, (320, 240))
 
         # grab image patches
-        original_patch = img[m:m + self.patch_sz, n:n + self.patch_sz]
-        warped_patch = inv_warped_image[m:m + self.patch_sz, n:n + self.patch_sz]
+        original_patch = img[n:n + self.patch_sz, m:m + self.patch_sz]
+        warped_patch = warped_image[n:n + self.patch_sz, m:m + self.patch_sz]
 
         # Stack patches to create input
         img_train = np.dstack([((original_patch / 255.0) - 0.456) / 0.224, ((warped_patch / 255.0) - 0.456) / 0.224])
