@@ -110,6 +110,12 @@ def test_NibsNet():
     mace = np.linalg.norm(error) / 4
     print('MACE {}'.format(mace))
 
+    pt_error = np.linalg.norm(error, axis=1)
+    print(pt_error)
+    pt_error_avg = np.average(pt_error)
+    print(pt_error_avg)
+
+
     # pts = [(b, a) for a, b in four_points]
     pts = four_points
     # pts_wpd = [(b, a) for a, b in perturbed_four_points]
