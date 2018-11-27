@@ -30,6 +30,51 @@ dir_metric = './metrics/'
 dir_data = '../MSCOCO/unlabeled2017/'
 
 
+def test_real_imgs():
+    patch_sz = 128
+    img1 = cv2.imread('./test_img/img3.jpg', 0)
+    img2 = cv2.imread('./test_img/img5.jpg', 0)
+
+    img1_patch = cv2.resize(img1, (patch_sz, patch_sz))
+    img2_patch = cv2.resize(img2, (patch_sz, patch_sz))
+
+    img_train = np.dstack([((img1_patch / 255.0) - 0.456) / 0.224, ((img2_patch / 255.0) - 0.456) / 0.224])
+    img_train = img_train.swapaxes(0, 2)
+    img_train = img_train.swapaxes(1, 2)
+    img_train = torch.from_numpy(img_train).float()
+
+    net = nib.NibsNet1()
+    cp = torch.load(dir_model + 'best_val_model.tar')
+    net.load_state_dict(cp['model_state_dict'])
+    net.eval()
+
+    model_input = img_train.unsqueeze(0)
+    out = net(model_input)
+
+    pts = np.array([(0, 0), (patch_sz, 0), (0, patch_sz), (patch_sz, patch_sz)], np.float32)
+
+    pts_out_flip = np.array([(int(out[0, 0].item()), int(out[0, 1].item())),
+                    (int(out[0, 2].item()) + patch_sz, int(out[0, 3].item())),
+                    (int(out[0, 4].item()), int(out[0, 5].item()) + patch_sz),
+                    (int(out[0, 6].item()) + patch_sz, int(out[0, 7].item()) + patch_sz)], np.float32)
+
+    H = cv2.getPerspectiveTransform(pts, pts_out_flip)
+    warp_img = cv2.warpPerspective(img1_patch, H, (patch_sz, patch_sz))
+
+    plt.figure(0)
+    plt.imshow(img1_patch)
+
+    plt.figure(1)
+    plt.imshow(img2_patch)
+
+    plt.figure(2)
+    plt.imshow(warp_img)
+
+    plt.show()
+
+
+
+
 def test_single_NibsNet():
     rho = 32
     patch_sz = 128
@@ -257,28 +302,29 @@ def testNibsNet1(data_lst, net, fn, num_iter):
 
 
 def main():
-    fn = open('./results/results.txt', 'w')
+    # fn = open('./results/results.txt', 'w')
+    #
+    # net = nib.NibsNet1()
+    # cp = torch.load(dir_model + 'best_val_model.tar')
+    # net.load_state_dict(cp['model_state_dict'])
+    # net.eval()
+    #
+    # data_lst = glob(dir_data + '*.jpg')
+    #
+    # err = 0
+    # num_iter = 0
+    #
+    # for i in range(0, 1000):
+    #     num_iter += 1
+    #     err += testNibsNet1(data_lst, net, fn, num_iter)
+    #
+    # MACE = err / num_iter
+    #
+    # print('FINAL MACE: {}'.format(MACE))
+    # fn.write('FINAL MACE: {}'.format(MACE))
+    # fn.close()
 
-    net = nib.NibsNet1()
-    cp = torch.load(dir_model + 'best_val_model.tar')
-    net.load_state_dict(cp['model_state_dict'])
-    net.eval()
-
-    data_lst = glob(dir_data + '*.jpg')
-
-    err = 0
-    num_iter = 0
-
-    for i in range(0, 1000):
-        num_iter += 1
-        err += testNibsNet1(data_lst, net, fn, num_iter)
-
-    MACE = err / num_iter
-
-    print('FINAL MACE: {}'.format(MACE))
-    fn.write('FINAL MACE: {}'.format(MACE))
-    fn.close()
-
+    test_real_imgs()
 
 
 if __name__ == '__main__':
