@@ -324,8 +324,9 @@ def main():
     # fn.write('FINAL MACE: {}'.format(MACE))
     # fn.close()
 
-    test_real_imgs()
+    # test_real_imgs()
 
+    test_single_NibsNet()
 
 if __name__ == '__main__':
     main()
