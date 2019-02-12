@@ -83,7 +83,7 @@ class NibsNet2(nn.Module):
         y = self.pool2(y)
         y = self.bnorm4(y)
 
-        z = torch.cat((x, y), 0)
+        z = torch.cat((x, y), 1)
 
         z = fn.relu(self.conv5(z))
         z = self.bnorm5(z)
