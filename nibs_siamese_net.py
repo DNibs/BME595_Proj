@@ -20,8 +20,8 @@ import torch.nn.functional as fn
 class NibsNet2(nn.Module):
     def __init__(self):
         super(NibsNet2, self).__init__()
-        # Input img size [128, 128, 2]
-        self.conv1 = nn.Conv2d(2, 64, 3, padding=1)
+        # Input img size [128, 128, 1]
+        self.conv1 = nn.Conv2d(1, 64, 3, padding=1)
         self.bnorm1 = nn.BatchNorm2d(64)
 
         self.conv2 = nn.Conv2d(64, 64, 3, padding=1)
