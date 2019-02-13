@@ -35,7 +35,7 @@ momentum = 0.9
 # Set folder directories
 dir_model = './model2/'
 dir_data = '../MSCOCO/unlabeled2017/'
-dir_metric = './metrics/'
+dir_metric = './metrics2/'
 
 
 def train(net, device, loader_train, optimizer, loss_fn, epoch, log_interval=10):
