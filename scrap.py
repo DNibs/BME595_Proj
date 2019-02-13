@@ -26,7 +26,7 @@ FLAG_TRAIN = True
 FLAG_DEBUG = False
 
 # Set Hyper Parameters
-batch_sz = 32
+batch_sz = 64
 init_learn_rt_adam = 0.002
 learn_rt_decay_epoch = 10
 wt_decay = 0.001355
@@ -66,7 +66,7 @@ def validate(net, device, loader_val, loss_fn, epoch, log_interval=10):
     with torch.no_grad():
         for batch_idx, (data, target) in enumerate(loader_val):
             data, target = data.to(device=device), target.to(device=device)
-            out = net(data)
+            out = net(data[:, 0:1, :, :], data[:, 1:2, :, :])
             loss = loss_fn(out, target)
             loss_epoch += loss.item()
             if batch_idx % log_interval == 0:
