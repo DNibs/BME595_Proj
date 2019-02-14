@@ -19,7 +19,7 @@ import nibs_siamese_net as nib2
 
 # Set FLAGS
 FLAG_USE_GPU = True
-FLAG_LOAD_CP = False
+FLAG_LOAD_CP = True
 FLAG_LOAD_BEST_VAL_MODEL = False
 FLAG_LOAD_BEST_TRAIN_MODEL = False
 FLAG_TRAIN = True
